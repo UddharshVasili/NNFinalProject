@@ -1,0 +1,50 @@
+name: Image Captioning Environment Setup
+
+on: [push, pull_request]
+
+jobs:
+  setup-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v3
+
+    - name: 🐍 Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: 💾 Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: 📦 Install dependencies
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: ✅ Run a sanity check script
+      run: |
+        source .venv/bin/activate
+        echo "Python and packages are set up!"
+        python --version
+        pip list
+
+    - name: 🧹 Run flake8 linting
+      run: |
+        pip install flake8
+        flake8 --exclude=.venv --max-line-length=100 .
+
+    #- name: ✅ Run unit tests
+      #run: |
+        #pip install pytest
+        #pytest tests/
+
+
